@@ -1,0 +1,58 @@
+Development of Equilibria – A Fitness and Nutrition Tracking Application
+
+Project Overview:
+Develop a full-stack fitness and nutrition application named Equilibria that provides personalized workout plans, nutritional guidance, and tracking features. The app must be accessible to all users (no restrictions based on age, gender, or fitness level), with a focus on inclusivity and balance in health. Use a modular architecture to ensure scalability, security, and ease of maintenance. Target platforms: Web (React.js) and Mobile (React Native for iOS/Android). Backend: Node.js with Express.js and MongoDB for data storage. Authentication: JWT-based. Ensure compliance with data privacy standards (e.g., GDPR/CCPA) for user health data.
+
+Core Requirements and Features:
+
+Accessibility and User Onboarding:
+- The application must be fully accessible, adhering to WCAG 2.1 guidelines (e.g., screen reader support, high contrast modes). Implement responsive design for all devices.
+- Include a registration and login page with form validation (e.g., email/password, optional OAuth via Google/Facebook). Store user credentials securely using bcrypt hashing. Upon registration, collect basic profile data: name, age, gender (male, female, other), height, weight, and fitness goals.
+
+Gender-Based Personalization:
+- Upon login, display a dashboard tailored to the user's selected gender. Use conditional rendering in the UI to show gender-specific content (e.g., male-focused plans emphasize strength training, female-focused plans include flexibility and hormonal considerations, others allow custom selection).
+- Implement a database schema with a User model including fields like gender (enum: 'male', 'female', 'other') and preferences (object for custom overrides).
+
+Workout Plan Management:
+- For gym users: Provide an upload interface (file upload or form-based) for existing workout plans (e.g., CSV/JSON parsing for exercises, sets, reps). Allow selection of goals (e.g., weight gain, weight loss, muscle gain) via dropdown. Calculate and suggest daily protein intake based on user weight (formula: e.g., 1.6-2.2g per kg for muscle gain, adjustable via API).
+- For home users: Generate dynamic workout suggestions based on goals, using an algorithm (e.g., rule-based or ML-powered if integrated) that considers user input.
+- Enable seamless switching between gym and home modes via a toggle in the dashboard (no separate pages; use state management like Redux or Context API to update UI dynamically).
+- Ask for injuries/problems during onboarding or via a modal: Store in User model as an array of strings (e.g., ['knee injury', 'back pain']). Filter suggested exercises to exclude contraindicated ones (e.g., via a predefined rules engine).
+
+Exercise and Nutrition Suggestions:
+- For both user types: After plan upload or goal selection, suggest additional exercises (e.g., API calls to a fitness database like ExerciseDB). Provide daily nutritional breakdowns, including macronutrients (protein, carbs, fats) and calorie estimates, tailored to goals (e.g., surplus for gain, deficit for loss).
+- Implement a suggestion engine: Use a backend service to query a nutrition API (e.g., Nutritionix) for meal ideas. Display in a card-based UI with images and macros.
+
+Nutrition Tracking Page:
+- Create a dedicated page/component for meal logging. Allow users to upload or input meals for breakfast, lunch, and dinner (form with fields: meal name, ingredients, quantity). Integrate calorie calculation via API (e.g., Nutritionix). Track junk food separately but include it in daily totals.
+- Implement daily calorie tracking: Aggregate data in a NutritionLog model (linked to User), with charts (e.g., using Chart.js) for visualization. Include a summary dashboard showing intake vs. goals.
+
+Water Drinking Tracker:
+- Add a tracker component with a progress bar (e.g., target: 8 glasses/day). Use local notifications (via libraries like react-native-push-notification) to remind users hourly. Provide suggestions based on activity level (e.g., "Drink more after workouts" via conditional logic). Store data in a WaterLog model with timestamps.
+
+Key Modules:
+
+Authentication Module:
+- Implement secure user sign-up (registration) and sign-in (login) functionality. Use JWT tokens for stateless authentication. Include password reset via email (e.g., Nodemailer integration). Support multi-factor authentication (MFA) for enhanced security. Validate inputs (e.g., email format, password strength) and handle errors gracefully (e.g., "Invalid credentials" messages).
+
+Session Management Module:
+- Manage user sessions using JWT with expiration (e.g., 24-hour tokens). Implement refresh tokens for seamless re-authentication. Use middleware (e.g., in Express.js) to verify sessions on protected routes. Handle session invalidation on logout or inactivity. Store session data securely in HTTP-only cookies for web and secure storage for mobile.
+
+Dashboard Module:
+- Display a personalized dashboard post-login, showing the logged-in user's details (e.g., name, profile picture) and their assigned role (e.g., "Gym User," "Home User," or "Admin" for potential future features like content moderation). Use role-based access control (RBAC) to conditionally render features (e.g., gym-specific tools for "Gym User"). Include quick-access widgets for workouts, nutrition logs, and water tracking. Ensure the dashboard is dynamic and updates based on user actions (e.g., switching between gym/home modes).
+
+Validations Module:
+- Ensure all forms and user inputs are validated both client-side (e.g., using libraries like Formik/Yup in React) and server-side (e.g., Joi in Node.js). Cover fields like email (regex validation), passwords (minimum length, complexity), numeric inputs (e.g., weight/height ranges), and file uploads (e.g., size/type limits for workout plans). Provide real-time feedback (e.g., error tooltips) and prevent invalid submissions. Implement sanitization to avoid XSS/SQL injection risks.
+
+Technical Architecture:
+
+Frontend: React.js (web) / React Native (mobile). Use hooks for state management, Axios for API calls. Implement routing with React Router.
+Backend: Node.js/Express.js. RESTful APIs for CRUD operations. Database: MongoDB with Mongoose schemas (e.g., User {with role field: enum 'gym_user', 'home_user', 'admin'}, WorkoutPlan, NutritionLog, WaterLog).
+Security: JWT for auth, input sanitization, rate limiting.
+Integrations: Third-party APIs for nutrition (Nutritionix), exercises (ExerciseDB), and notifications.
+Deployment: Host on Vercel (frontend) and Heroku/AWS (backend). Use CI/CD with GitHub Actions.
+Testing: Unit tests with Jest, E2E with Cypress.
+
+UI/UX Guidelines:
+
+Design an aesthetic, classic look for Equilibria: Use a clean, minimalist UI with earthy color palettes (e.g., greens, blues, neutrals), serif fonts for headings (e.g., Playfair Display), and subtle animations (e.g., fade-ins via Framer Motion). Avoid clutter; prioritize card-based layouts, progress bars, and icons (e.g., from Heroicons). Ensure high contrast and readability. Mockups should evoke timeless wellness (e.g., inspired by vintage fitness posters).
