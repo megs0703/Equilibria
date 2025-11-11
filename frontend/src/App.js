@@ -2,8 +2,10 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Layout from './components/Layout';
+import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import ProfileSetup from './pages/ProfileSetup';
 import Dashboard from './pages/Dashboard';
 import Workouts from './pages/Workouts';
 import Nutrition from './pages/Nutrition';
@@ -12,35 +14,47 @@ import Progress from './pages/Progress';
 import './index.css';
 
 const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated } = useAuth();
-  return isAuthenticated ? children : <Navigate to="/login" />;
+  const { isAuthenticated, initialized } = useAuth();
+  
+  if (!initialized) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{borderColor: '#487800'}}></div>
+      </div>
+    );
+  }
+  
+  return isAuthenticated ? children : <Navigate to="/login" replace />;
 };
 
 const PublicRoute = ({ children }) => {
-  const { isAuthenticated } = useAuth();
-  return !isAuthenticated ? children : <Navigate to="/dashboard" />;
+  const { isAuthenticated, initialized } = useAuth();
+  
+  if (!initialized) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{borderColor: '#487800'}}></div>
+      </div>
+    );
+  }
+  
+  return !isAuthenticated ? children : <Navigate to="/dashboard" replace />;
 };
 
 function App() {
   return (
     <AuthProvider>
       <Router>
-        <div className="App">
+        <div className="App min-h-screen zen-gradient">
           <Routes>
+            <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+            <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
             <Route
-              path="/login"
+              path="/profile-setup"
               element={
-                <PublicRoute>
-                  <Login />
-                </PublicRoute>
-              }
-            />
-            <Route
-              path="/register"
-              element={
-                <PublicRoute>
-                  <Register />
-                </PublicRoute>
+                <ProtectedRoute>
+                  <ProfileSetup />
+                </ProtectedRoute>
               }
             />
             <Route
@@ -93,7 +107,8 @@ function App() {
                 </ProtectedRoute>
               }
             />
-            <Route path="/" element={<Navigate to="/dashboard" />} />
+            <Route path="/" element={<Landing />} />
+            <Route path="/landing" element={<Landing />} />
           </Routes>
         </div>
       </Router>

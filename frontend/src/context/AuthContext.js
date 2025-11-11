@@ -8,13 +8,15 @@ const authReducer = (state, action) => {
     case 'LOGIN_START':
       return { ...state, loading: true, error: null };
     case 'LOGIN_SUCCESS':
-      return { ...state, loading: false, user: action.payload, isAuthenticated: true };
+      return { ...state, loading: false, user: action.payload, isAuthenticated: true, initialized: true };
     case 'LOGIN_FAILURE':
-      return { ...state, loading: false, error: action.payload, isAuthenticated: false };
+      return { ...state, loading: false, error: action.payload, isAuthenticated: false, initialized: true };
     case 'LOGOUT':
-      return { ...state, user: null, isAuthenticated: false };
+      return { ...state, user: null, isAuthenticated: false, initialized: true };
     case 'UPDATE_USER':
       return { ...state, user: { ...state.user, ...action.payload } };
+    case 'INITIALIZE':
+      return { ...state, initialized: true };
     default:
       return state;
   }
@@ -26,6 +28,7 @@ export const AuthProvider = ({ children }) => {
     isAuthenticated: false,
     loading: false,
     error: null,
+    initialized: false,
   });
 
   useEffect(() => {
@@ -33,7 +36,15 @@ export const AuthProvider = ({ children }) => {
     const user = localStorage.getItem('user');
     
     if (token && user) {
-      dispatch({ type: 'LOGIN_SUCCESS', payload: JSON.parse(user) });
+      try {
+        dispatch({ type: 'LOGIN_SUCCESS', payload: JSON.parse(user) });
+      } catch (error) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        dispatch({ type: 'INITIALIZE' });
+      }
+    } else {
+      dispatch({ type: 'INITIALIZE' });
     }
   }, []);
 

@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const Register = () => {
+  const navigate = useNavigate();
+  const { register } = useAuth();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -13,256 +15,200 @@ const Register = () => {
     height: '',
     weight: '',
     fitnessGoals: [],
-    injuries: [],
+    injuries: []
   });
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const { register, loading, error } = useAuth();
-  const navigate = useNavigate();
-
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    
-    if (type === 'checkbox') {
-      setFormData(prev => ({
-        ...prev,
-        [name]: checked 
-          ? [...prev[name], value]
-          : prev[name].filter(item => item !== value)
-      }));
-    } else {
-      setFormData({
-        ...formData,
-        [name]: value,
-      });
-    }
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const result = await register({
-      ...formData,
-      age: parseInt(formData.age),
-      height: parseInt(formData.height),
-      weight: parseInt(formData.weight),
-    });
+    setIsLoading(true);
+    setError('');
     
-    if (result.success) {
-      navigate('/dashboard');
+    try {
+      const result = await register(formData);
+      if (result.success) {
+        navigate('/dashboard');
+      } else {
+        setError(result.error);
+      }
+    } catch (err) {
+      setError('Registration failed. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const fitnessGoalOptions = [
-    'weight_loss',
-    'weight_gain', 
-    'muscle_gain',
-    'endurance',
-    'general_fitness'
-  ];
-
-  const commonInjuries = [
-    'knee_injury',
-    'back_pain',
-    'shoulder_injury',
-    'ankle_injury',
-    'wrist_injury'
-  ];
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-secondary-50 py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
-      <motion.div
+    <div className="min-h-screen bg-cream-50 flex items-center justify-center p-6">
+      <motion.div 
+        className="w-full max-w-md"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="max-w-2xl mx-auto"
+        transition={{ duration: 0.6 }}
       >
-        <div className="text-center mb-8">
-          <h1 className="text-3xl sm:text-4xl font-serif font-bold text-neutral-900">
-            Join Equilibria
-          </h1>
-          <p className="mt-2 text-neutral-600">
-            Already have an account?{' '}
-            <Link
-              to="/login"
-              className="font-medium text-primary-600 hover:text-primary-500"
-            >
-              Sign in
-            </Link>
-          </p>
-        </div>
+        <div className="bg-white rounded-3xl shadow-lg p-8">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <h1 className="heading-display text-4xl text-sage-700 mb-3">
+              Equilibria
+            </h1>
+            <p className="text-stone-500 text-lg">
+              Begin your journey to balance
+            </p>
+          </div>
 
-        <div className="card">
-          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
-            {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-                {error}
-              </div>
-            )}
-
-            {/* Basic Information */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">
-                  Full Name
+                <label className="block text-stone-700 font-medium mb-2 text-sm">
+                  Name
                 </label>
                 <input
                   type="text"
                   name="name"
-                  required
-                  className="input-field"
                   value={formData.name}
-                  onChange={handleChange}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  name="email"
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-3 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500 bg-stone-50 text-stone-700 text-sm"
+                  placeholder="Full Name"
                   required
-                  className="input-field"
-                  value={formData.email}
-                  onChange={handleChange}
                 />
               </div>
-
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">
-                  Password
-                </label>
-                <input
-                  type="password"
-                  name="password"
-                  required
-                  className="input-field"
-                  value={formData.password}
-                  onChange={handleChange}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">
+                <label className="block text-stone-700 font-medium mb-2 text-sm">
                   Age
                 </label>
                 <input
                   type="number"
                   name="age"
-                  required
-                  min="13"
-                  max="120"
-                  className="input-field"
                   value={formData.age}
-                  onChange={handleChange}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-3 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500 bg-stone-50 text-stone-700 text-sm"
+                  placeholder="25"
+                  min="13"
+                  required
                 />
               </div>
+            </div>
 
+            <div>
+              <label className="block text-stone-700 font-medium mb-2 text-sm">
+                Email
+              </label>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                className="w-full px-3 py-3 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500 bg-stone-50 text-stone-700 text-sm"
+                placeholder="your@email.com"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-stone-700 font-medium mb-2 text-sm">
+                Password
+              </label>
+              <input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleInputChange}
+                className="w-full px-3 py-3 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500 bg-stone-50 text-stone-700 text-sm"
+                placeholder="••••••••"
+                minLength="6"
+                required
+              />
+            </div>
+
+            <div className="grid grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">
+                <label className="block text-stone-700 font-medium mb-2 text-sm">
                   Gender
                 </label>
                 <select
                   name="gender"
-                  required
-                  className="input-field"
                   value={formData.gender}
-                  onChange={handleChange}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-3 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500 bg-white text-stone-700 text-sm"
+                  required
                 >
-                  <option value="">Select gender</option>
+                  <option value="">Select</option>
                   <option value="male">Male</option>
                   <option value="female">Female</option>
                   <option value="other">Other</option>
                 </select>
               </div>
-
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">
+                <label className="block text-stone-700 font-medium mb-2 text-sm">
                   Height (cm)
                 </label>
                 <input
                   type="number"
                   name="height"
-                  required
-                  min="100"
-                  max="250"
-                  className="input-field"
                   value={formData.height}
-                  onChange={handleChange}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-3 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500 bg-stone-50 text-stone-700 text-sm"
+                  placeholder="175"
+                  min="100"
+                  required
                 />
               </div>
-
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">
+                <label className="block text-stone-700 font-medium mb-2 text-sm">
                   Weight (kg)
                 </label>
                 <input
                   type="number"
                   name="weight"
-                  required
-                  min="30"
-                  max="300"
-                  className="input-field"
                   value={formData.weight}
-                  onChange={handleChange}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-3 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-500 bg-stone-50 text-stone-700 text-sm"
+                  placeholder="70"
+                  min="30"
+                  step="0.1"
+                  required
                 />
               </div>
             </div>
 
-            {/* Fitness Goals */}
-            <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-2">
-                Fitness Goals (select all that apply)
-              </label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                {fitnessGoalOptions.map((goal) => (
-                  <label key={goal} className="flex items-center">
-                    <input
-                      type="checkbox"
-                      name="fitnessGoals"
-                      value={goal}
-                      onChange={handleChange}
-                      className="mr-2"
-                    />
-                    <span className="text-sm capitalize">
-                      {goal.replace('_', ' ')}
-                    </span>
-                  </label>
-                ))}
+            {error && (
+              <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
+                {error}
               </div>
-            </div>
+            )}
 
-            {/* Injuries */}
-            <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-2">
-                Current Injuries or Limitations (optional)
-              </label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                {commonInjuries.map((injury) => (
-                  <label key={injury} className="flex items-center">
-                    <input
-                      type="checkbox"
-                      name="injuries"
-                      value={injury}
-                      onChange={handleChange}
-                      className="mr-2"
-                    />
-                    <span className="text-sm capitalize">
-                      {injury.replace('_', ' ')}
-                    </span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            <button
+            <motion.button
               type="submit"
-              disabled={loading}
-              className="btn-primary w-full"
+              className="w-full bg-sage-600 hover:bg-sage-700 text-white font-medium py-4 px-6 rounded-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-sage-500 focus:ring-offset-2 text-base mt-8"
+              disabled={isLoading}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
             >
-              {loading ? 'Creating Account...' : 'Create Account'}
-            </button>
+              {isLoading ? 'Creating Account...' : 'Create Account'}
+            </motion.button>
           </form>
+
+          <div className="text-center mt-8">
+            <p className="text-stone-500">
+              Already have an account?{' '}
+              <button 
+                onClick={() => navigate('/login')}
+                className="text-sage-600 hover:text-sage-700 font-medium"
+              >
+                Sign in
+              </button>
+            </p>
+          </div>
         </div>
       </motion.div>
     </div>

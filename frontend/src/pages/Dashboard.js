@@ -1,283 +1,285 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
-import { userAPI, nutritionAPI, waterAPI } from '../utils/api';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import {
-  FireIcon,
-  BeakerIcon,
-  ChartBarIcon,
-  CogIcon,
-} from '@heroicons/react/24/outline';
+import { useNavigate } from 'react-router-dom';
 
 const Dashboard = () => {
-  const { user, updateUser } = useAuth();
-  const [stats, setStats] = useState({
-    todayCalories: 0,
-    calorieGoal: 2000,
-    waterIntake: 0,
-    waterGoal: 8,
-    proteinIntake: 0,
-    proteinGoal: 150,
-  });
-  const [workoutMode, setWorkoutMode] = useState(user?.preferences?.workoutType || 'home');
-
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
-
-  const fetchDashboardData = async () => {
-    try {
-      const [nutritionRes, waterRes] = await Promise.all([
-        nutritionAPI.getTodayLog(),
-        waterAPI.getTodayLog(),
-      ]);
-
-      setStats(prev => ({
-        ...prev,
-        todayCalories: nutritionRes.data.totalCalories || 0,
-        waterIntake: waterRes.data.glasses || 0,
-        waterGoal: waterRes.data.goal || 8,
-        proteinIntake: nutritionRes.data.totalProtein || 0,
-      }));
-    } catch (error) {
-      console.error('Error fetching dashboard data:', error);
-    }
+  const navigate = useNavigate();
+  const [workoutMode, setWorkoutMode] = useState('home'); // 'home' or 'gym'
+  
+  // Mock user data - in real app this would come from context/API
+  const user = {
+    name: 'John Doe',
+    gender: 'male',
+    fitnessGoal: 'muscle-gain'
   };
 
-  const addWater = async () => {
-    try {
-      await waterAPI.addIntake(1);
-      fetchDashboardData();
-    } catch (error) {
-      console.error('Error adding water:', error);
-    }
-  };
-
-  const handleModeToggle = async (mode) => {
-    try {
-      setWorkoutMode(mode);
-      await userAPI.updatePreferences({
-        workoutType: mode,
-        proteinIntake: stats.proteinGoal,
-        calorieGoal: stats.calorieGoal,
-        waterGoal: stats.waterGoal,
-      });
-      updateUser({ preferences: { ...user.preferences, workoutType: mode } });
-    } catch (error) {
-      console.error('Error updating preferences:', error);
-    }
-  };
-
-  const getPersonalizedGreeting = () => {
-    const hour = new Date().getHours();
-    let timeGreeting = 'Good morning';
-    if (hour >= 12 && hour < 17) timeGreeting = 'Good afternoon';
-    if (hour >= 17) timeGreeting = 'Good evening';
-
-    const genderSpecific = user?.gender === 'female' 
-      ? 'Ready to balance strength and wellness today?'
-      : user?.gender === 'male'
-      ? 'Time to build strength and endurance!'
-      : 'Ready to achieve your fitness goals?';
-
-    return { timeGreeting, genderSpecific };
-  };
-
-  const { timeGreeting, genderSpecific } = getPersonalizedGreeting();
-
-  const StatCard = ({ title, value, goal, icon: Icon, color, unit = '' }) => {
-    const percentage = goal ? Math.min((value / goal) * 100, 100) : 0;
-    
-    return (
-      <motion.div
-        whileHover={{ scale: 1.02 }}
-        className="card"
-      >
-        <div className="flex items-center justify-between mb-4">
-          <div className={`p-2 rounded-lg ${color}`}>
-            <Icon className="w-6 h-6 text-white" />
-          </div>
-          <div className="text-right">
-            <p className="text-2xl font-bold text-neutral-900">
-              {value}{unit}
-            </p>
-            <p className="text-sm text-neutral-600">
-              of {goal}{unit}
-            </p>
-          </div>
-        </div>
-        <h3 className="font-medium text-neutral-700 mb-2">{title}</h3>
-        <div className="w-full bg-neutral-200 rounded-full h-2">
-          <div
-            className={`h-2 rounded-full transition-all duration-300 ${
-              color.replace('bg-', 'bg-').replace('-500', '-600')
-            }`}
-            style={{ width: `${percentage}%` }}
-          />
-        </div>
-        <p className="text-xs text-neutral-500 mt-1">
-          {percentage.toFixed(0)}% complete
-        </p>
-      </motion.div>
-    );
-  };
+  const quickStats = [
+    { label: 'Water Intake', value: '6/8', unit: 'glasses', progress: 75 },
+    { label: 'Calories', value: '1,850', unit: 'kcal', progress: 85 },
+    { label: 'Workouts', value: '3/4', unit: 'this week', progress: 75 },
+    { label: 'Sleep', value: '7.5', unit: 'hours', progress: 90 }
+  ];
 
   return (
-    <div className="space-y-6">
+    <div className="min-h-screen bg-gradient-to-br from-cream-50 to-lime-50">
       {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="card bg-gradient-to-r from-primary-500 to-secondary-500 text-white"
-      >
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start space-y-4 sm:space-y-0">
-          <div className="flex-1">
-            <h1 className="text-2xl sm:text-3xl font-serif font-bold mb-2">
-              {timeGreeting}, {user?.name}!
-            </h1>
-            <p className="text-primary-100 mb-4 text-sm sm:text-base">{genderSpecific}</p>
-            <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm">
-              <span className="bg-white/20 px-2 py-1 rounded-full">
-                {user?.role?.replace('_', ' ').toUpperCase()}
-              </span>
-              <span className="bg-white/20 px-2 py-1 rounded-full">
-                {user?.gender?.toUpperCase()}
-              </span>
+      <div className="bg-white shadow-lg border-b-2 relative" style={{borderColor: '#487800'}}>
+        <div className="max-w-7xl mx-auto px-6 py-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="heading-display text-4xl font-semibold" style={{color: '#487800'}}>
+                Welcome back, {user.name}
+              </h1>
+              <p className="text-stone-600 mt-2 text-lg font-medium">Ready to continue your wellness journey?</p>
             </div>
-          </div>
-          <div className="flex flex-col sm:text-right">
-            <p className="text-primary-100 text-xs sm:text-sm mb-2">Current Mode</p>
-            <div className="flex space-x-2">
-              <button
-                onClick={() => handleModeToggle('home')}
-                className={`px-3 py-1 rounded-full text-xs sm:text-sm transition-colors ${
-                  workoutMode === 'home'
-                    ? 'bg-white text-primary-600'
-                    : 'bg-white/20 text-white hover:bg-white/30'
-                }`}
-              >
-                Home
-              </button>
-              <button
-                onClick={() => handleModeToggle('gym')}
-                className={`px-3 py-1 rounded-full text-xs sm:text-sm transition-colors ${
-                  workoutMode === 'gym'
-                    ? 'bg-white text-primary-600'
-                    : 'bg-white/20 text-white hover:bg-white/30'
-                }`}
-              >
-                Gym
-              </button>
+            <div className="flex items-center space-x-4">
+              {/* Workout Mode Toggle */}
+              <div className="flex rounded-xl p-1 shadow-md" style={{backgroundColor: '#48780020'}}>
+                <button
+                  onClick={() => setWorkoutMode('home')}
+                  className={`px-6 py-3 rounded-lg text-base font-bold transition-all ${
+                    workoutMode === 'home'
+                      ? 'text-white shadow-lg transform scale-105'
+                      : 'hover:opacity-80'
+                  }`}
+                  style={{
+                    backgroundColor: workoutMode === 'home' ? '#487800' : 'transparent',
+                    color: workoutMode === 'home' ? 'white' : '#487800'
+                  }}
+                >
+                  🏠 Home
+                </button>
+                <button
+                  onClick={() => setWorkoutMode('gym')}
+                  className={`px-6 py-3 rounded-lg text-base font-bold transition-all ${
+                    workoutMode === 'gym'
+                      ? 'text-white shadow-lg transform scale-105'
+                      : 'hover:opacity-80'
+                  }`}
+                  style={{
+                    backgroundColor: workoutMode === 'gym' ? '#487800' : 'transparent',
+                    color: workoutMode === 'gym' ? 'white' : '#487800'
+                  }}
+                >
+                  🏋️ Gym
+                </button>
+              </div>
+              
+
             </div>
           </div>
         </div>
-      </motion.div>
-
-      {/* Stats Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
-        <StatCard
-          title="Calories Today"
-          value={stats.todayCalories}
-          goal={stats.calorieGoal}
-          icon={FireIcon}
-          color="bg-red-500"
-        />
-        <StatCard
-          title="Water Intake"
-          value={stats.waterIntake}
-          goal={stats.waterGoal}
-          icon={BeakerIcon}
-          color="bg-blue-500"
-          unit=" glasses"
-        />
-        <StatCard
-          title="Protein Intake"
-          value={stats.proteinIntake}
-          goal={stats.proteinGoal}
-          icon={ChartBarIcon}
-          color="bg-green-500"
-          unit="g"
-        />
-        <StatCard
-          title="Workout Mode"
-          value={workoutMode === 'gym' ? 'Gym' : 'Home'}
-          goal={null}
-          icon={CogIcon}
-          color="bg-purple-500"
-        />
+        
+        {/* Profile Icon - Absolute Top Right Corner */}
+        <button 
+          onClick={() => navigate('/profile')}
+          className="absolute top-4 right-4 w-12 h-12 rounded-full flex items-center justify-center text-white text-xl hover:scale-110 transition-all duration-300 shadow-lg hover:shadow-xl"
+          style={{backgroundColor: '#487800'}}
+        >
+          👤
+        </button>
       </div>
 
-      {/* Quick Actions */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-        className="card"
-      >
-        <h2 className="text-lg sm:text-xl font-serif font-semibold mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-          <button 
-            onClick={() => window.location.href = '/nutrition'}
-            className="btn-primary text-center py-3 sm:py-4 text-sm sm:text-base"
-          >
-            Log Meal
-          </button>
-          <button 
-            onClick={addWater}
-            className="btn-secondary text-center py-3 sm:py-4 text-sm sm:text-base"
-          >
-            Add Water
-          </button>
-          <button 
-            onClick={() => window.location.href = '/workouts'}
-            className="btn-primary text-center py-3 sm:py-4 text-sm sm:text-base"
-          >
-            Start Workout
-          </button>
-          <button 
-            onClick={() => window.location.href = '/progress'}
-            className="btn-secondary text-center py-3 sm:py-4 text-sm sm:text-base"
-          >
-            View Progress
-          </button>
+      <div className="max-w-7xl mx-auto p-6">
+        {/* Quick Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10">
+          {quickStats.map((stat, index) => (
+            <motion.div
+              key={stat.label}
+              className="bg-white rounded-2xl shadow-lg border-2 p-6 hover:shadow-xl transition-all duration-300"
+              style={{borderColor: '#48780030'}}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+              whileHover={{ y: -4, scale: 1.02 }}
+            >
+              <div className="text-center">
+                <div className="text-3xl font-black mb-2" style={{color: '#487800'}}>{stat.value}</div>
+                <div className="text-base text-stone-700 mb-3 font-semibold">{stat.label}</div>
+                <div className="w-full rounded-full h-3 shadow-inner" style={{backgroundColor: '#48780020'}}>
+                  <div 
+                    className="h-3 rounded-full transition-all duration-700 shadow-sm"
+                    style={{ 
+                      width: `${stat.progress}%`,
+                      background: `linear-gradient(to right, #487800, #5a9600)`
+                    }}
+                  ></div>
+                </div>
+              </div>
+            </motion.div>
+          ))}
         </div>
-      </motion.div>
 
-      {/* Today's Recommendations */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-        className="card"
-      >
-        <h2 className="text-lg sm:text-xl font-serif font-semibold mb-4">
-          Today's Recommendations
-        </h2>
-        <div className="space-y-3">
-          <div className="flex items-center p-3 bg-primary-50 rounded-lg">
-            <div className="w-2 h-2 bg-primary-500 rounded-full mr-3"></div>
-            <p className="text-sm">
-              {user?.gender === 'female' 
-                ? 'Consider adding yoga or pilates to your routine for flexibility'
-                : 'Focus on compound movements for maximum muscle engagement'
+        {/* Main Feature Cards */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-8 mb-10">
+          {/* Workouts Card */}
+          <motion.div
+            className="bg-white rounded-2xl shadow-xl border-2 p-8 cursor-pointer hover:shadow-2xl transition-all duration-300"
+            style={{borderColor: '#48780030'}}
+            onClick={() => navigate('/workouts')}
+            whileHover={{ y: -6, scale: 1.03 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+          >
+            <div className="flex items-center mb-6">
+              <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-white text-2xl mr-5 shadow-lg" style={{background: 'linear-gradient(135deg, #487800, #5a9600)'}}>
+                {workoutMode === 'gym' ? '🏋️' : '🏠'}
+              </div>
+              <div>
+                <h3 className="heading-display text-2xl font-bold" style={{color: '#487800'}}>Workouts</h3>
+                <p className="text-stone-600 text-base font-semibold">{workoutMode === 'gym' ? 'Gym Plans' : 'Home Exercises'}</p>
+              </div>
+            </div>
+            <p className="text-stone-700 mb-6 text-base font-medium leading-relaxed">
+              {workoutMode === 'gym' 
+                ? 'Upload and manage your gym workout plans'
+                : 'Get personalized home workout suggestions'
               }
             </p>
-          </div>
-          <div className="flex items-center p-3 bg-secondary-50 rounded-lg">
-            <div className="w-2 h-2 bg-secondary-500 rounded-full mr-3"></div>
-            <p className="text-sm">
-              Aim for {Math.round(user?.weight * 1.6)}g of protein today based on your weight
+            <div className="flex items-center font-bold text-lg" style={{color: '#487800'}}>
+              <span>View Plans</span>
+              <span className="ml-3 text-xl">→</span>
+            </div>
+          </motion.div>
+
+          {/* Nutrition Card */}
+          <motion.div
+            className="bg-white rounded-2xl shadow-xl border-2 border-terracotta-300 p-8 cursor-pointer hover:shadow-2xl transition-all duration-300 hover:border-terracotta-400"
+            onClick={() => navigate('/nutrition')}
+            whileHover={{ y: -6, scale: 1.03 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.5 }}
+          >
+            <div className="flex items-center mb-6">
+              <div className="w-16 h-16 bg-gradient-to-br from-terracotta-600 to-terracotta-700 rounded-2xl flex items-center justify-center text-white text-2xl mr-5 shadow-lg">
+                🥗
+              </div>
+              <div>
+                <h3 className="heading-display text-2xl font-bold" style={{color: '#487800'}}>Nutrition</h3>
+                <p className="text-stone-600 text-base font-semibold">Meal Tracking</p>
+              </div>
+            </div>
+            <p className="text-stone-700 mb-6 text-base font-medium leading-relaxed">
+              Log your meals and track calories, macros, and nutritional goals
             </p>
-          </div>
-          <div className="flex items-center p-3 bg-green-50 rounded-lg">
-            <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
-            <p className="text-sm">
-              Stay hydrated! You're {((stats.waterIntake / stats.waterGoal) * 100).toFixed(0)}% 
-              towards your daily water goal
+            <div className="flex items-center font-bold text-lg" style={{color: '#487800'}}>
+              <span>Log Meals</span>
+              <span className="ml-3 text-xl">→</span>
+            </div>
+          </motion.div>
+
+          {/* Water Tracker Card */}
+          <motion.div
+            className="bg-white rounded-2xl shadow-xl border-2 border-blue-300 p-8 cursor-pointer hover:shadow-2xl transition-all duration-300 hover:border-blue-400"
+            whileHover={{ y: -6, scale: 1.03 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.6 }}
+          >
+            <div className="flex items-center mb-6">
+              <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl flex items-center justify-center text-white text-2xl mr-5 shadow-lg">
+                💧
+              </div>
+              <div>
+                <h3 className="heading-display text-2xl font-bold" style={{color: '#487800'}}>Water Intake</h3>
+                <p className="text-stone-600 text-base font-semibold">Stay Hydrated</p>
+              </div>
+            </div>
+            <p className="text-stone-700 mb-6 text-base font-medium leading-relaxed">
+              Track your daily water consumption with smart reminders
             </p>
-          </div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center font-bold text-lg" style={{color: '#487800'}}>
+                <span>Add Water</span>
+                <span className="ml-3 text-xl">→</span>
+              </div>
+              <button className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-5 py-2 rounded-xl text-base font-bold hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
+                + Glass
+              </button>
+            </div>
+          </motion.div>
+
+          {/* Progress Card */}
+          <motion.div
+            className="card cursor-pointer hover:shadow-lg transition-all duration-300"
+            onClick={() => navigate('/progress')}
+            whileHover={{ y: -2 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.7 }}
+          >
+            <div className="flex items-center mb-4">
+              <div className="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center text-white text-xl mr-4">
+                📊
+              </div>
+              <div>
+                <h3 className="heading-display text-xl" style={{color: '#487800'}}>Progress</h3>
+                <p className="text-stone-500 text-sm">Analytics & Trends</p>
+              </div>
+            </div>
+            <p className="text-stone-600 mb-4">
+              View your fitness journey with detailed analytics and insights
+            </p>
+            <div className="flex items-center font-medium" style={{color: '#487800'}}>
+              <span>View Analytics</span>
+              <span className="ml-2">→</span>
+            </div>
+          </motion.div>
+
+
+
+          {/* Protein Recommendation Card */}
+          <motion.div
+            className="card"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.9 }}
+          >
+            <div className="flex items-center mb-4">
+              <div className="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center text-white text-xl mr-4">
+                🥩
+              </div>
+              <div>
+                <h3 className="heading-display text-xl" style={{color: '#487800'}}>Daily Protein</h3>
+                <p className="text-stone-500 text-sm">Recommendation</p>
+              </div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold mb-2" style={{color: '#487800'}}>120g</div>
+              <p className="text-stone-600 text-sm">
+                Based on your {user.fitnessGoal.replace('-', ' ')} goal
+              </p>
+            </div>
+          </motion.div>
         </div>
-      </motion.div>
+
+        {/* Today's Summary */}
+        <motion.div
+          className="bg-white rounded-2xl shadow-xl border-2 p-8"
+          style={{borderColor: '#48780030'}}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 1.0 }}
+        >
+          <h3 className="heading-display text-3xl mb-8 font-bold text-center" style={{color: '#487800'}}>Today's Summary</h3>
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="text-center bg-gradient-to-br from-terracotta-50 to-terracotta-100 rounded-2xl p-6 border-2 border-terracotta-200">
+              <div className="text-xl font-bold text-stone-800 mb-3">🔥 Calories Burned</div>
+              <div className="text-4xl font-black text-terracotta-700">420</div>
+            </div>
+            <div className="text-center rounded-2xl p-6 border-2" style={{background: 'linear-gradient(135deg, #48780010, #48780020)', borderColor: '#48780030'}}>
+              <div className="text-xl font-bold text-stone-800 mb-3">⏱️ Active Time</div>
+              <div className="text-4xl font-black" style={{color: '#487800'}}>45 min</div>
+            </div>
+            <div className="text-center bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl p-6 border-2 border-purple-200">
+              <div className="text-xl font-bold text-stone-800 mb-3">🎯 Goals Met</div>
+              <div className="text-4xl font-black text-purple-700">3/4</div>
+            </div>
+          </div>
+        </motion.div>
+      </div>
     </div>
   );
 };

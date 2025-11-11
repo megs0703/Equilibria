@@ -1,121 +1,124 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
+  const navigate = useNavigate();
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
-    password: '',
+    password: ''
   });
-  const [showPassword, setShowPassword] = useState(false);
-  
-  const { login, loading, error } = useAuth();
-  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const result = await login(formData);
-    if (result.success) {
-      navigate('/dashboard');
+    setIsLoading(true);
+    setError('');
+    
+    try {
+      const result = await login(formData);
+      if (result.success) {
+        navigate('/dashboard');
+      } else {
+        setError(result.error);
+      }
+    } catch (err) {
+      setError('Login failed. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-secondary-50 flex items-center justify-center py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
-      <motion.div
+    <div className="min-h-screen bg-cream-50 flex items-center justify-center p-6">
+      <motion.div 
+        className="w-full max-w-md"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="max-w-md w-full space-y-6 sm:space-y-8">
+        transition={{ duration: 0.6 }}
       >
-        <div>
-          <h1 className="text-center text-3xl sm:text-4xl font-serif font-bold text-neutral-900">
-            Equilibria
-          </h1>
-          <h2 className="mt-4 sm:mt-6 text-center text-2xl sm:text-3xl font-serif text-neutral-900">
-            Welcome back
-          </h2>
-          <p className="mt-2 text-center text-sm text-neutral-600">
-            Don't have an account?{' '}
-            <Link
-              to="/register"
-              className="font-medium text-primary-600 hover:text-primary-500"
-            >
-              Sign up
-            </Link>
-          </p>
-        </div>
+        <div className="bg-white rounded-3xl shadow-lg p-8">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <h1 className="heading-display text-4xl text-sage-700 mb-3">
+              Equilibria
+            </h1>
+            <p className="text-stone-500 text-lg">
+              Welcome back to your wellness journey
+            </p>
+          </div>
 
-        <form className="mt-6 sm:mt-8 space-y-4 sm:space-y-6" onSubmit={handleSubmit}>
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-              {error}
-            </div>
-          )}
-
-          <div className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label htmlFor="email" className="sr-only">
-                Email address
+              <label className="block text-stone-700 font-medium mb-3 text-base">
+                Email
               </label>
               <input
-                id="email"
-                name="email"
                 type="email"
-                autoComplete="email"
-                required
-                className="input-field"
-                placeholder="Email address"
+                name="email"
                 value={formData.email}
-                onChange={handleChange}
+                onChange={handleInputChange}
+                className="w-full px-4 py-4 border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sage-500 focus:border-transparent bg-stone-50 text-stone-700 placeholder-stone-400 text-base"
+                placeholder="your@email.com"
+                required
               />
             </div>
 
-            <div className="relative">
-              <label htmlFor="password" className="sr-only">
+            <div>
+              <label className="block text-stone-700 font-medium mb-3 text-base">
                 Password
               </label>
               <input
-                id="password"
+                type="password"
                 name="password"
-                type={showPassword ? 'text' : 'password'}
-                autoComplete="current-password"
-                required
-                className="input-field pr-10"
-                placeholder="Password"
                 value={formData.password}
-                onChange={handleChange}
+                onChange={handleInputChange}
+                className="w-full px-4 py-4 border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sage-500 focus:border-transparent bg-stone-50 text-stone-700 placeholder-stone-400 text-base"
+                placeholder="••••••••"
+                required
               />
-              <button
-                type="button"
-                className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                <span className="text-neutral-400 text-sm">
-                  {showPassword ? 'Hide' : 'Show'}
-                </span>
-              </button>
             </div>
-          </div>
 
-          <div>
-            <button
+            {error && (
+              <div className="p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
+                {error}
+              </div>
+            )}
+
+            <motion.button
               type="submit"
-              disabled={loading}
-              className="btn-primary w-full"
+              className="w-full bg-sage-600 hover:bg-sage-700 text-white font-medium py-4 px-6 rounded-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-sage-500 focus:ring-offset-2 text-base mt-8"
+              disabled={isLoading}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
             >
-              {loading ? 'Signing in...' : 'Sign in'}
-            </button>
+              {isLoading ? 'Signing In...' : 'Sign In'}
+            </motion.button>
+          </form>
+
+          <div className="text-center mt-8">
+            <p className="text-stone-500">
+              Don't have an account?{' '}
+              <button 
+                onClick={() => navigate('/register')}
+                className="text-sage-600 hover:text-sage-700 font-medium"
+              >
+                Sign up
+              </button>
+            </p>
           </div>
-        </form>
+        </div>
       </motion.div>
     </div>
   );

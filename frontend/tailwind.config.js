@@ -8,33 +8,60 @@ module.exports = {
       fontFamily: {
         'serif': ['Playfair Display', 'serif'],
         'sans': ['Inter', 'sans-serif'],
+        'display': ['Playfair Display', 'serif'],
       },
       colors: {
-        primary: {
-          50: '#f0f9f4',
-          100: '#dcf2e4',
-          500: '#22c55e',
-          600: '#16a34a',
-          700: '#15803d',
+        // Zen Sage Greens (matching the image)
+        sage: {
+          50: '#f8faf8',
+          100: '#f0f4f0',
+          200: '#e1e9e1',
+          300: '#c8d5c8',
+          400: '#a8bfa8',
+          500: '#7a9b7a', // Main sage from image
+          600: '#6b8a6b',
+          700: '#5a7a5a',
+          800: '#4a6a4a',
+          900: '#3a5a3a',
         },
-        secondary: {
-          50: '#eff6ff',
-          100: '#dbeafe',
-          500: '#3b82f6',
-          600: '#2563eb',
-          700: '#1d4ed8',
+        // Off-white and cream tones
+        cream: {
+          50: '#fefefe',
+          100: '#fdfdfc',
+          200: '#faf9f7',
+          300: '#f6f4f1',
+          400: '#f1eeea',
+          500: '#ebe7e2',
+          600: '#d9d4ce',
+          700: '#c7c1ba',
+          800: '#b5aea6',
+          900: '#a39b92',
         },
-        neutral: {
-          50: '#fafaf9',
-          100: '#f5f5f4',
-          200: '#e7e5e4',
-          300: '#d6d3d1',
-          400: '#a8a29e',
-          500: '#78716c',
-          600: '#57534e',
-          700: '#44403c',
-          800: '#292524',
-          900: '#1c1917',
+        // Warm terracotta accent (for buttons)
+        terracotta: {
+          50: '#fdf7f5',
+          100: '#fbeee9',
+          200: '#f6ddd3',
+          300: '#f0c4b3',
+          400: '#e8a389',
+          500: '#d97d5c', // Matching the "Get Started" button
+          600: '#c66a47',
+          700: '#a8573a',
+          800: '#8a4730',
+          900: '#6f3a28',
+        },
+        // Muted neutrals
+        stone: {
+          50: '#fafafa',
+          100: '#f5f5f5',
+          200: '#eeeeee',
+          300: '#e0e0e0',
+          400: '#bdbdbd',
+          500: '#9e9e9e',
+          600: '#757575',
+          700: '#616161',
+          800: '#424242',
+          900: '#212121',
         }
       }
     },
