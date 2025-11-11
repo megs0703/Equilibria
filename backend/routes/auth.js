@@ -47,8 +47,15 @@ router.post('/register', async (req, res) => {
         id: user._id,
         name: user.name,
         email: user.email,
+        age: user.age,
+        gender: user.gender,
+        height: user.height,
+        weight: user.weight,
+        fitnessGoals: user.fitnessGoals,
+        injuries: user.injuries,
         role: user.role,
-        gender: user.gender
+        preferences: user.preferences,
+        createdAt: user.createdAt
       }
     });
   } catch (error) {
@@ -80,9 +87,15 @@ router.post('/login', async (req, res) => {
         id: user._id,
         name: user.name,
         email: user.email,
-        role: user.role,
+        age: user.age,
         gender: user.gender,
-        preferences: user.preferences
+        height: user.height,
+        weight: user.weight,
+        fitnessGoals: user.fitnessGoals,
+        injuries: user.injuries,
+        role: user.role,
+        preferences: user.preferences,
+        createdAt: user.createdAt
       }
     });
   } catch (error) {
